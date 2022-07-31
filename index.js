@@ -130,60 +130,39 @@ function EmpInfoPrompts(compRoles, actionChoice)
                     addEmp(emp_info, managerObjArr);}) }
         } else if (actionChoice == "VIEW BY MANAGER") {
             viewAllEmpManager(managerObjArr, managerNamesArr);
-        } else {
-            //perfors a promise.all to wait until inquirerfunction instances resolve
+        } else 
             Promise.all([first_name.ask(), last_name.ask()]).then(prompts => {
                 inquirer.prompt(prompts).then(emp_info => {
-
-                    //below set of if else statements executed the multiples check function delivering 
-                    //different parameters based on the user main menu choice
                     if (actionChoice == "UPDATE EMP ROLE") {
                         EmpMultiplesCheck(emp_info, actionChoice, compRoles);
                     } else if (actionChoice == "UPDATE EMP MANAGER") {
                         EmpMultiplesCheck(emp_info, actionChoice, managerObjArr, managerNamesArr);
                     } else {
                         EmpMultiplesCheck(emp_info, actionChoice);}})}3 }})}
-
 function addEmp(emp_info, managerObjArr) {
-
     console.log("You've entered employee ADD");
-
-
     const queryRoleIdFromTitle = "SELECT role.id FROM role WHERE role.title = (?) ;"
     connection.query(queryRoleIdFromTitle, emp_info.employee_role, function (err, res) {
         if (err) {
-            throw err;
-        }
+            throw error;}
         const empRoleId = res[0].id;
         const empFirstName = emp_info.first_name;
         const empLastName = emp_info.last_name;
         const empManagerName = emp_info.employee_manager.split(" ");
         const empManagerFirstName = empManagerName[0];
         const empManagerLastName = empManagerName[1];
-
         let empManagerID = 0;
         for (let manager of managerObjArr) {
             if (manager.firstName == empManagerFirstName && manager.lastName === empManagerLastName) {
-                empManagerID = manager.ID;
-            }
-        }
-
-
+                empManagerID = manager.ID; }}
         const queryInsertEmpInfo = "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)"
         connection.query(queryInsertEmpInfo, [empFirstName, empLastName, empRoleId, empManagerID], function (err, res) {
             if (err) {
-                throw err
-            }
+                throw err}
             console.log("Employee Added");
-            mainMenu();
-        })
-    })
-}
-
+            mainMenu();})})}
 function EmpMultiplesCheck(emp_info, actionChoice, arrayNeededForNextStep) {
-
     console.log("You've entered employee multiples check")
-
     const empFirstName = emp_info.first_name;
     const empLastName = emp_info.last_name;
     const queryMultipleEmpCheck = `SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, 
@@ -192,69 +171,45 @@ function EmpMultiplesCheck(emp_info, actionChoice, arrayNeededForNextStep) {
                                     INNER JOIN role on role.id = employee.role_id
                                     INNER JOIN department on department.id = role.department_id
                                     WHERE employee.first_name = (?) AND employee.last_name = (?);`
-
     connection.query(queryMultipleEmpCheck, [empFirstName, empLastName], function (err, res) {
-
-
         if (res.length > 1) {
             console.log("Multiple Employees Found!")
             let multipleName = [];
             for (employee of res) {
                 let empStr = `${employee.id} ${employee.first_name} ${employee.last_name} ${employee.title} ${employee.name}`
-                multipleName.push(empStr);
-            }
+                multipleName.push(empStr);}
             const which_employee_to_Delete = new InquirerFunctions(inquirerTypes[2], 'employee_delete', questions.deleteEmployee1, multipleName);
-
             inquirer.prompt([which_employee_to_Delete.ask()]).then(userChoice => {
                 const chosenEmpInfo = userChoice.employee_delete.split(" ");
                 const chosenEmpFirstName = chosenEmpInfo[1];
                 const chosenEmpLastName = chosenEmpInfo[2];
                 const chosenEmpID = chosenEmpInfo[0];
                 const chosenEmpRole = chosenEmpInfo[3];
-
                 if (actionChoice === "DELETE") {
                     deleteEmp(chosenEmpFirstName, chosenEmpLastName, chosenEmpID);
                 } else if (actionChoice === "UPDATE EMP ROLE") {
                     updateEmpRole(chosenEmpID, arrayNeededForNextStep);
                 } else if (actionChoice === "UPDATE EMP MANAGER") {
-                    updateEmpManager(chosenEmpID, arrayNeededForNextStep);
-                }
-            })
-
+                    updateEmpManager(chosenEmpID, arrayNeededForNextStep);}})
         } else if (res[0].id == "undefined") {
             console.log("Could not find employee. Rerouted to Main Menu")
             mainMenu();
-
         } else {
             console.log("One Employee Found!")
-
             if (actionChoice === "DELETE") {
                 deleteEmp(empFirstName, empLastName, res[0].id)
             } else if (actionChoice === "UPDATE EMP ROLE") {
                 updateEmpRole(res[0].id, arrayNeededForNextStep);
             } else if (actionChoice === "UPDATE EMP MANAGER") {
-                updateEmpManager(res[0].id, arrayNeededForNextStep);
-            }
-        }
-    })
-}   
+                updateEmpManager(res[0].id, arrayNeededForNextStep);}}})}   
 function deleteEmp(firstName, lastName, employeeID) {
     console.log("You've entered employee delete.")
-
     const queryDelete = "DELETE FROM employee WHERE employee.id = (?);"
     const confirmDelete = new InquirerFunctions(inquirerTypes[2], 'confirm_choice', questions.deleteEmployee2 + firstName + " " + lastName + "?", ["yes", "no"]);
     const deleteQuery = new SQLquery(queryDelete, employeeID);
-
-    //I created a confirm method in inquirer.js but was having trouble keeping scope and keeping functions from waiting so I did a list inquirer instead.
     inquirer.prompt([confirmDelete.ask()]).then(respObj => {
         if (respObj.confirm_choice === "yes") {
-            deleteQuery.delete(mainMenu);
-        } else {
-            mainMenu();
-        }
-    })
-}
-
+            deleteQuery.delete(mainMenu); } else {mainMenu();}})}
 function updateEmpRole(employeeID, RolesArray) {
     console.log("Entered update employee role.")
 
