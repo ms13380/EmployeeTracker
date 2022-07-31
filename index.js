@@ -268,19 +268,11 @@ function updateEmpRole(employeeID, RolesArray) {
             if (err) {
                 throw err
             }
-
             const queryUpdateRoleId = `UPDATE employee
                                             SET employee.role_id = (?)
                                             WHERE employee.id = (?)`
-
             const updateEmpRoleId = new SQLquery(queryUpdateRoleId, [res[0].id, employeeID])
-
-            updateEmpRoleId.update(mainMenu, "Employee Role Updated!");
-        })
-    })
-}
-
-
+            updateEmpRoleId.update(mainMenu, "Employee Role Updated!"); } })}
 function updateEmpManager(employeeID, managerObjectArray) {
     console.log("Entered update employee manager.")
 
@@ -290,143 +282,88 @@ function updateEmpManager(employeeID, managerObjectArray) {
     connection.query(queryCurrentManager, employeeID, function (err, res) {
         if (err) {
             throw error}
-
         const currentManagerID = res[0].manager_id;
-
         const managerChoices = managerObjectArray.filter(manager => {
             if (manager.ID != currentManagerID) {
                 return true; };})
-
         possibleNewManagerNames = [];
         for (manager of managerChoices) {
             managerName = "ID: " + manager.ID + " " + manager.firstName + " " + manager.lastName;
-            possibleNewManagerNames.push(managerName);
-        }
-
+            possibleNewManagerNames.push(managerName)}
         const newManagerChoice = new InquirerFunctions(inquirerTypes[2], 'new_Manager', questions.newManager, possibleNewManagerNames)
-
         inquirer.prompt([newManagerChoice]).then(userChoice => {
             const userInputSplitAtId = userChoice.new_Manager.split(" ", 2);
             const newManagerID = userInputSplitAtId[1];
-
             const queryUpdateNewManager = `UPDATE employee
                                             SET employee.manager_id = (?)
                                             WHERE employee.id = (?)`
-
             connection.query(queryUpdateNewManager, [newManagerID, employeeID], function (err, res) {
                 if (err) {
-                    throw err;
-                }
+                    throw err;}
                 console.log("Manager Updated!");
                 mainMenu()      }) }  }
-
 function viewAllRoles() {
     const query = `SELECT role.title, role.salary, department.name
                     FROM role
                     INNER JOIN department ON department.id = role.department_id`
     const roleTable = new SQLquery(query);
-
-    roleTable.generalTableQuery(mainMenu);
-}
-
+    roleTable.generalTableQuery(mainMenu);}
 function viewAllDep() {
-
     const query = `SELECT department.name
                     FROM department`
-
     const depTable = new SQLquery(query);
-
-    depTable.generalTableQuery(mainMenu);
-}
-
+    depTable.generalTableQuery(mainMenu);}
 function addRole() {
-
     const queryDeps = "SELECT department.name FROM department;"
     connection.query(queryDeps, function (err, res) {
-
         if (err) throw err
-
         let depNameArr = []
         for (let i = 0; i < res.length; i++) {
-            depNameArr.push(res[i].name)
-        }
-
+            depNameArr.push(res[i].name}
         const whatRole = new InquirerFunctions(inquirerTypes[0], 'role_to_add', questions.newRole)
         const whatSalary = new InquirerFunctions(inquirerTypes[0], 'role_salary', questions.salary)
         const whatdepartment = new InquirerFunctions(inquirerTypes[2], 'department', questions.department, depNameArr)
-
-
         Promise.all([whatRole.ask(), whatSalary.ask(), whatdepartment.ask()]).then(prompts => {
             inquirer.prompt(prompts).then(userChoices => {
-
                 const getDepId = `SELECT department.id FROM department WHERE department.name = (?);`
                 connection.query(getDepId, userChoices.department, function (err, res) {
                     if (err) {
-                        throw err
-                    }
-
+                        throw error}
                     const addRolequery = `INSERT INTO role (role.title, role.salary, role.department_id)
                                     VALUES ( (?), (?), (?));`
                     const addRole = new SQLquery(addRolequery, [userChoices.role_to_add, userChoices.role_salary, res[0].id]);
-
                     addRole.update(mainMenu, "Role added!"); })  }) })})
-function deleteRole(compRolesArr) {
-
+function delteRole(compRolesArr) {
     console.log("You've entered role delete")
-
     const whatRole = new InquirerFunctions(inquirerTypes[2], 'role_to_delete', questions.deleteRole, compRolesArr);
     inquirer.prompt([whatRole.ask()]).then(userChoice => {
-
         const role_id_Query = `SELECT role.id FROM role WHERE role.title = (?);`
         connection.query(role_id_Query, userChoice.role_to_delete, function (err, res) {
-
             const roleDeleteID = res[0].id;
             const roleDeleteTitle = userChoice.role_to_delete;
-
-            //This if statment checks to see if more that one role exist with that title.
-            //If it does the user is prompted with a role title and department name to aid the selection of the role they want to delete
             if (res.length > 1) {
-                //Tell user role exists in multiple departments and make sure they want to delete it
                 console.log("Role found in multiple departments!");
-
                 const departmentsWithRolequery = `SELECT department.name, role.department_id
                                                 FROM department
                                                 INNER JOIN role on role.department_id = department.id AND role.title = (?);`
-
                 connection.query(departmentsWithRolequery, userChoice.role_to_delete, function (err, res) {
                     if (err) throw err
                     const departmentsWithRoleArr = [];
                     for (let department of res) {
-                        departmentsWithRoleArr.push(department);
-                    }
-
+                        departmentsWithRoleArr.push(department);}
                     const whichDeparment = new InquirerFunctions(inquirerTypes[2], 'department_to_delete_Role_From', questions.departmentDeleteRole, departmentsWithRoleArr);
-
                     inquirer.prompt([whichDeparment.ask()]).then(userChoice => {
                         console.log(res);
                         const departmentName_ID_Arr = res.filter(department => {
                             if (department.name == userChoice.department_to_delete_Role_From) {
-                                return true;
-                            }
-                        })
-
+                                return true;}})
                         deleteRoleQuery2 = "DELETE FROM role WHERE role.title = (?) AND role.department_id = (?)"
                         const deleteInstance2 = new SQLquery(deleteRoleQuery2, [roleDeleteTitle, departmentName_ID_Arr[0].department_id])
-                        deleteInstance2.delete(mainMenu);
-                    })
-                })
-
-            } else {
+                        deleteInstance2.delete(mainMenu);})})} else {
                 const deleteRoleQuery = "DELETE FROM role WHERE role.id = (?);"
                 const deleteInstance = new SQLquery(deleteRoleQuery, roleDeleteID);
-                deleteInstance.delete(mainMenu);
-            }
-        })
-    })
-}
-
+                deleteInstance.delete(mainMenu); } })})}
 function addDep(depNameArr) {
-
     const whatDep = new InquirerFunctions(inquirerTypes[0], 'dep_to_add', questions.newDep)
     inquirer.prompt([whatDep.ask()]).then(userChoice => {
         const alreadyExist = depNameArr.filter(department => {
@@ -443,5 +380,4 @@ function removeDep(depNameArr) {
     inquirer.prompt([whatDepartment.ask()]).then(userChoice => {
         const deleteDepQuery = `DELETE FROM department WHERE department.name = (?);`
         const deleteDep = new SQLquery(deleteDepQuery, userChoice.dep_to_delete);
-
         deleteDep.update(mainMenu, "Department deleted!"); })}
