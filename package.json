@@ -21,8 +21,6 @@
     "type": "git",
     "url": "git@github.com:ms13380/EmployeeTracker.git"
   },
-  "author": "James Lovejoy",
-  "license": "ISC",
   "bugs": {
     "url": "https://ms13380.github.io/EmployeeTracker/"
   },
