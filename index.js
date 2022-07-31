@@ -5,14 +5,11 @@ const commandMenuChoices = require('./lib/commandMenu');
 const questions = require('./lib/questions');
 const InquirerFunctions = require('./lib/inquirer');
 const SQLquery = require('./lib/SQL_queries');
-const inquirerTypes = [
-    'input', 'confirm', 'list'
-]
+const inquirerTypes = ['input', 'confirm', 'list']
 console.log(figlet.textSync('Employee Management', {
     font: 'Standard',
     horizontalLayout: 'default',
-    verticalLayout: 'default'
-}));
+    verticalLayout: 'default'}));
 mainMenu();
 function mainMenu() {
     const menuPrompt = new InquirerFunctions(inquirerTypes[2], 'menuChoice', questions.mainMenuPrompt, commandMenuChoices);
@@ -107,61 +104,33 @@ function viewAllEmpRole(compRoles, actionChoice) {
                         INNER JOIN department on department.id = role.department_id;`;
         const empByRoleTable = new SQLquery(query, userResp.role_Title);
         empByRoleTable.generalTableQuery(mainMenu);})}
-function viewAllManager() {
-    const query = `SELECT employee.id, employee.first_name, employee.last_name, department.name
-                    FROM employee
-                    INNER JOIN role on role.id = employee.role_id
-                    INNER JOIN department on department.id = role.department_id
-                    WHERE employee.id IN ( SELECT employee.manager_id FROM employee );`;
-            
     const managerTable = new SQLquery(query);
     managerTable.generalTableQuery(mainMenu);
-}
-
-function EmpInfoPrompts(compRoles, actionChoice) {
-.
+function EmpInfoPrompts(compRoles, actionChoice) 
     const query = "SELECT id, first_name, last_name FROM employee WHERE employee.id IN ( SELECT employee.manager_id FROM employee )";
-
     connection.query(query, function (err, res) {
         if (err) throw err
-        
         let managerNamesArr = [];
         let managerObjArr = [];
-
-   
         for (let i = 0; i < res.length; i++) {
             let name = res[i].first_name + " " + res[i].last_name;
             let managersobj = {
                 ID: res[i].id,
                 firstName: res[i].first_name,
-                lastName: res[i].last_name
-            }
-
+                lastName: res[i].last_name}
             managerObjArr.push(managersobj);
-            managerNamesArr.push(name);
-        }
-
+            managerNamesArr.push(name);}
         const first_name = new InquirerFunctions(inquirerTypes[0], 'first_name', questions.addEmployee1);
         const last_name = new InquirerFunctions(inquirerTypes[0], 'last_name', questions.addEmployee2);
         const emp_role = new InquirerFunctions(inquirerTypes[2], 'employee_role', questions.addEmployee3, compRoles);
         const emp_manager = new InquirerFunctions(inquirerTypes[2], 'employee_manager', questions.addEmployee4, managerNamesArr);
-
         if (actionChoice == "ADD") {
-
- 
             Promise.all([first_name.ask(), last_name.ask(), emp_role.ask(), emp_manager.ask()]).then(prompts => {
                 inquirer.prompt(prompts).then(emp_info => {
-                    addEmp(emp_info, managerObjArr);
-                })
-            })
-            //Execute code if the view by manager was chosen
+                    addEmp(emp_info, managerObjArr);}) }
         } else if (actionChoice == "VIEW BY MANAGER") {
             viewAllEmpManager(managerObjArr, managerNamesArr);
-
-            //This code will excute for all other functions navigated to this area
-            //It prompts user for the first and last.
         } else {
-
             //perfors a promise.all to wait until inquirerfunction instances resolve
             Promise.all([first_name.ask(), last_name.ask()]).then(prompts => {
                 inquirer.prompt(prompts).then(emp_info => {
@@ -173,13 +142,7 @@ function EmpInfoPrompts(compRoles, actionChoice) {
                     } else if (actionChoice == "UPDATE EMP MANAGER") {
                         EmpMultiplesCheck(emp_info, actionChoice, managerObjArr, managerNamesArr);
                     } else {
-                        EmpMultiplesCheck(emp_info, actionChoice);
-                    }
-                })
-            })
-        }
-    })
-}
+                        EmpMultiplesCheck(emp_info, actionChoice);}})}3 }})}
 
 function addEmp(emp_info, managerObjArr) {
 
