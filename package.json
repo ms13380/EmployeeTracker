@@ -19,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jlovejo2/Employee_Management_System.git"
+    "url": "git@github.com:ms13380/EmployeeTracker.git"
   },
   "author": "James Lovejoy",
   "license": "ISC",
